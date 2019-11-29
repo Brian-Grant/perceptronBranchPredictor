@@ -1,0 +1,13 @@
+perceptron 256 15 8: 0.910389
+perceptron 256 22 6: 0.897035
+perceptron 128 15 6: 0.881875
+perceptron 128 18 5: 0.851034
+perceptron 128 23 4: 0.814108
+perceptron 256 11 4: 0.782507
+perceptron 256 9 5: 0.821951
+perceptron 256 7 6: 0.830448
+perceptron 256 8 6: 0.84468
+perceptron 256 15 8: 0.910389
+perceptron 128 13 7: 0.890648
+perceptron 128 11 8: 0.871691
+perceptron 2048 36 16: 0.93952

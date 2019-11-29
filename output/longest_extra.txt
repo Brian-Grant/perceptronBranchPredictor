@@ -1,0 +1,4 @@
+percept12: 0.903803
+percept22: 0.926237
+percept62: 0.935097
+perceptX: 0.936735

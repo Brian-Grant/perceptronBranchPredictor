@@ -1,0 +1,219 @@
+Brian Grant
+
+
+
+I decided to keep a few print statements, and a directory of output files. I 
+figured it didnt matter because the extra credit is no longer submitted with 
+the regular assignment. Also, with the current directory setup, if you drag
+the traces directory which was included in the student project description
+run "make test" will compile, link, and run each of the 6 traces through the 
+predictor. The output folder will be populated with the accuracy calculated
+for a handful of different perceptron configurations
+
+The perceptron was a lot of fun to figure out.
+
+The only reference I used was the provided "Dynamic Branch Prediction
+With Perceptrions" by Daniel A Jimenez, et al.
+
+The design follows what is outlined in the paper
+
+
+	
+The perceptron predictor takes 6 parameters:
+	vector address vector - the address of each branch
+	vectorbranch action vector - the corresponding action the branch actually took
+	int tablesize - the number of perceptrons being used
+	int weightPerPercept - the dimension of each perceptron 
+	int historybits - has to equal weightPerPercept
+	int bitsPerDimension -the number of bits each weight in a perceptron occupies
+
+The paramaters determine the total number of bits used by the predictor.
+I will discuss this after I explain the process. 
+
+In this scheme, instead of 0, and 1 for T and NT in the ghr, -1 means NT
+and 1 means T. This is to enable the ghr to affect the magnitude of the dot product
+in both the negative and positive directions. Because of this slight difference,
+I had to have a regular ghr, and a ghr array. After each iteration the ghr array
+is updated based on the contents of the ghr in the following fashion:
+	if ghr position n is 1 array[n] = 1
+	if ghr position n is 0 array[n] = -1
+
+Now, on to the process:
+
+Populate ghr array with 1s
+initialize ghr 0
+create a table of <tableSize> perceptrons
+create each perceptron as an array of size <weightPerPercept>
+initialize each weight in each perceptron to 0
+determine threshold = threshold = (1.9 * historyBits) + 14;
+	This formula was deemed the best threshold, which depends on the number of
+	bits used in the ghr. Recall historyBits = weightPerPercept
+
+For each branch:
+	hash into the perceptron table by taking address%tableSize and select the
+		apropriate perceptron	
+		
+	compute Y 
+		Y = the dot product of the ghr array and the perceptron + an initial constant
+			bias of 1. This works because the perceptron and the ghr array are
+			basically vectors.
+	
+	if Y is negative, predict NT
+	if Y is positive, predict T
+	
+	update # correct predictions accordingly
+	update ghr 
+	update ghr array 
+
+	let t = -1 if branch was actually NT
+	let t = 1 if branch was actually T
+
+	update the perceptron you were working with IF:
+		the sign of t is the opposite of the sign of Y 
+		or
+		the magnitude of Y is less than the determined threshold
+
+		BUT: to limit the bits used in each weight I added the constraint that
+				if the weight is at the max dont increment 
+				and 
+				if the weight is at the min dont decrement
+					eg) if the bits used was 8, the max and min value for each
+						weight are -127, 127 (2^(bits-1))
+	
+		update each perceptronWeight[n] += t*ghrArray[n]
+
+
+This concludes the logic of the perceptron. The more negative the given weights
+of a perceptron is, the more it is correlated with NT. The more positive (further 
+away from zero), the more the weight is correlated with T. Weights close to zero
+do not contribute as much to the outcome of predictions in the perceptron.
+
+The number of bits in a given perceptron can be calculated by:
+
+<tableSize> * <weightsPerPerceptron> * <bits per dimension>
+	in reality there is also a ghr array of size[weightsPerPerceptron] and
+	each element is -1 or 1, so two bits per element
+	but this does not contribute much to the overall bits, I figured it would 
+	remain negligible. for example a ghr of size 36 contributes 36*2 = 72 bits
+
+
+
+For reference here is the tournament results
+
+	short1: 0.872009
+	short2: 0.885845
+	short3: 0.874267
+	long1: 0.860373
+	long2: 0.893793
+	long3: 0.879677
+
+The best performing Perceptron predictor:
+	2048 * 36 * 16 = 1,179,648 bits   with the following results
+
+	short1: 0.935896
+	short2: 0.925646
+	short3: 0.902349
+	long1: 0.928008
+	long2: 0.947282
+	long3: 0.93952
+
+The best performing Perceptron which won on all 6 traces with lowest bits:
+	
+	256 * 15 * 8 = 30,720 bits    with the following results
+
+	short1: 0.889452
+	short2: 0.893068
+	short3: 0.890644
+	long1: 0.865237
+	long2: 0.907448
+	long3: 0.910389
+
+The following are perceptron predictors that took fewer than 12144 bits and 
+	the traces they won
+
+ 	short1: none
+	short2: none
+	short3: 128 15 6: 0.883918
+			128 13 7: 0.887428
+	
+	long1: none
+	long2: none
+	long3:	128 13 7: 0.890648
+			128 15 6: 0.881875
+
+
+
+
+Even though there were no winnners for short1, short2, long1, long2 below 12144
+many came very close.
+
+
+
+
+This was a very interesting exercise. I would say that what surprised me the most 
+was the affect of the bits per weight. I would have thought that a perceptron with 
+weights in the range [-32, 32] would not have performed much differently than
+a perceptron with weights in the range [-127, 127]
+
+
+
+Also the number of perceptrons had an affect on the outcome in an unexpected way.
+More is not particularly better.
+
+included in the directory:
+
+Source
+Makefile
+zipped up input traces
+an output folder which contains the accuracy for a bunch of different
+perceptron configurations.
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
